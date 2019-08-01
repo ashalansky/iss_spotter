@@ -1,17 +1,7 @@
-/**
- * Makes a single API request to retrieve the user's IP address.
- * Input:
- *   - A callback (to pass back an error or the IP string)
- * Returns (via Callback):
- *   - An error, if any (nullable)
- *   - The IP address as a string (null if error). Example: "162.245.144.188"
- */
 const request = require('request');
-const url = 'https://api.ipify.org?format=json';
 
-
-const fetchMyIP = function (callback) {
-  request(url, (error, response, body) => {
+const fetchMyIP = function(callback) {
+  request('https://api.ipify.org?format=json', (error, response, body) => {
     if (error) {
       return callback(error, null);
     }
@@ -19,25 +9,29 @@ const fetchMyIP = function (callback) {
       callback(Error(`Status Code ${response.statusCode} when fetching IP: ${body}`), null);
       return;
     }
-    const ip = JSON.parse(body).ip; 
-      if (error) {
-        callback(error, null);
-      } else {
-        callback(null, ip);
-      }    
-  });
+    const ip = JSON.parse(body).ip; {
+      return callback(null, ip);
+    }
+  })
 };
-
-const fetchMyGeo = (ip, callback) => {
-  request(url, (error, response, body) => {
+const fetchCoordsByIP = (ip, callback) => {
+  request(`https://ipvigilante.com/json/${ip}`, (error, response, body) => {
     if (error) {
       return callback(error, null);
     }
+    if (response.statusCode !== 200) {
+      callback(Error(`Status Code ${response.statusCode} when fetching IP: ${body}`), null);
+      return;
+    }
+    const {latitude, longitude } = JSON.parse(body).data;
+      if (error) {
+        callback(error, null);
+      } else {
+        callback(null, {latitude, longitude});
+      }
   });
 };
 
 
 
-module.exports = {
-  fetchMyIP
-};
+module.exports = { fetchMyIP, fetchCoordsByIP };
